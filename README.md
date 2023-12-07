@@ -15,7 +15,7 @@ DITTO_PLAYGROUND_TOKEN=a01b2c34-5d6e-7fgh-ijkl-8mno9p0q12r3
 the project directory  
 
 ## Features  
-- Select "New Task" from the plus menu to create simple ToDo task    
+- Select "New Task" from the plus menu to create a simple ToDo task    
 - Click the body of a ToDo row in the list to open it in Edit view  
 - Toggle ToDo completion status in Edit view or by clicking the row icon in the list view    
 - Delete ToDo in the Edit view  

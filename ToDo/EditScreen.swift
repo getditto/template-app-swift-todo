@@ -1,6 +1,6 @@
 //
 //  EditScreen.swift
-//  Tasks
+//  ToDo
 //
 //  Created by Maximilian Alexander on 8/27/21.
 //
@@ -48,7 +48,7 @@ class EditScreenViewModel: ObservableObject {
                 "userId": userId,
                 "isCompleted": isCompleted,
                 "isDeleted": false,
-                "invitationIds": [String:Bool]()            
+                "invitationIds": [String:Bool]()  
             ]
             
             let query = "INSERT INTO COLLECTION tasks (invitationIds MAP) DOCUMENTS (:newDoc)"

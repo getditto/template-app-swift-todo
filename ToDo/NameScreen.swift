@@ -1,6 +1,6 @@
 //
 //  NameScreen.swift
-//  Tasks
+//  ToDo
 //
 //  Created by Rae McKelvey on 11/23/22.
 //

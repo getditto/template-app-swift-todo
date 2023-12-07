@@ -1,6 +1,6 @@
 //
-//  TaskRow.swift
-//  Tasks
+//  ToDoRow.swift
+//  ToDo
 //
 //  Created by Maximilian Alexander on 8/27/21.
 //
