@@ -21,4 +21,7 @@ the project directory
 - In list view, click the body of a task row to open it in Edit view  
 - In list view, click task row "plus" icon to add (random) user invitations  
 - Toggle task completion status in Edit view, or by clicking the row icon in the list view    
-- Evict task in the Edit view  
+- Evict task in the Edit view
+
+![Tasks_app_screenshot_473x1024](https://github.com/getditto/template-app-swift-todo/assets/10930016/d43f7fea-c38f-48ca-a4f2-f2773e4961a9)
+
