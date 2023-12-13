@@ -5,84 +5,129 @@
 //  Created by Maximilian Alexander on 8/26/21.
 //
 
-import SwiftUI
+import Combine
 import DittoSwift
+import SwiftUI
 
+@MainActor
 class TasksListScreenViewModel: ObservableObject {
-    @Published var tasks = [Task]()
+    @Published var tasks = [TaskModel]()
     @Published var isPresentingEditScreen: Bool = false
-    @Published var isPresentingNameScreen: Bool = false
+    @Published var isPresentingUsersScreen: Bool = false
     @Published var userId: String = ""
     
-    private(set) var taskToEdit: Task? = nil
-
-    var liveQuery: DittoLiveQuery?
-    var subscription: DittoSubscription?
-
+    private(set) var taskToEdit: TaskModel? = nil
+    
+    private let dittoSync = DittoManager.shared.ditto.sync
+    private let dittoStore = DittoManager.shared.ditto.store    
+    private var subscription: DittoSyncSubscription?
+    private var storeObserver: DittoStoreObserver?
+    
     init() {
-        if (liveQuery == nil) {
-            createQuery()
-        }
+        try? updateQuery()        
     }
     
-    public func createQuery() {
-        var query = "(!isDeleted)"
-        if (userId != "") {
-            query += "&& invitationIds.\(userId) == true"
+    public func updateQuery() throws {        
+        let query = userId.isEmpty ?
+        "SELECT * FROM COLLECTION tasks (invitationIds MAP) WHERE NOT isSafeForEviction"
+        : "SELECT * FROM COLLECTION tasks (invitationIds MAP) WHERE NOT isSafeForEviction AND userId == :userId"
+
+        do {
+            // Existing subscription must be cancelled before resetting
+            if let sub = subscription {
+                sub.cancel()
+                subscription = nil
+            }
+            subscription = try dittoSync.registerSubscription(
+                query: query, arguments: ["userId": userId]
+            )
+        } catch {
+            print("ERROR registering subscription: \(error.localizedDescription)")
+            throw error
         }
-            
-        self.subscription = DittoManager.shared.ditto.store["tasks"]
-            .find(query).subscribe()
         
-        self.liveQuery = DittoManager.shared.ditto.store["tasks"]
-            .find(query)
-            .observeLocal(eventHandler: {  docs, event in
-                print(event.description)
-                self.tasks = docs.map({ Task(document: $0) })
-                print(self.tasks)
-            })
-        DittoManager.shared.ditto.store["tasks"].find("isDeleted == true").evict()
-    }
+        do {
+            if let observer = storeObserver {
+                observer.cancel()
+                storeObserver = nil
+            }
+
+            storeObserver = try dittoStore.registerObserver(
+                query: subscription!.queryString,
+                arguments: subscription!.queryArguments
+            ) { [weak self] result in
+                guard let self = self else { return }
+                Task {
+                    await MainActor.run {
+                        self.tasks = result.items.compactMap { 
+//                            TaskModel($0.value) // alternative
+                            TaskModel.withJson($0.jsonString())
+                        }
+                    }
+                }
+            }
+        } catch {
+            print("ERROR registering observer: \(error.localizedDescription)")
+            throw error
+        }
+    }    
     
     public static func randomFakeFirstName() -> String {
         return TasksApp.firstNameList.randomElement()!
     }
     
-    func toggle(task: Task) {
-        DittoManager.shared.ditto.store["tasks"].findByID(task._id)
-            .update { mutableDoc in
-                guard let mutableDoc = mutableDoc else { return }
-                mutableDoc["isCompleted"].set(!mutableDoc["isCompleted"].boolValue)
+    func toggleComplete(task: TaskModel) {        
+        Task {
+            let isComplete = !task.isCompleted
+            let query = "UPDATE COLLECTION tasks (invitationIds MAP)"
+            + "SET isCompleted = :isCompleted WHERE _id == :_id"
+
+            do {
+                try await dittoStore.execute(
+                    query: query,
+                    arguments: ["isCompleted": isComplete, "_id": task._id]
+                )
+            } catch {
+                print("toggle task failed with error: \(error.localizedDescription)")
             }
-    }
-    
-    func clickedInvite(task: Task) {
-        DittoManager.shared.ditto.store["tasks"].findByID(task._id)
-            .update { mutableDoc in
-                guard let mutableDoc = mutableDoc else { return }
-                var userId = TasksListScreenViewModel.randomFakeFirstName()
-                mutableDoc["invitationIds"][userId] = true
-            }
+        }
     }
 
-    func clickedBody(task: Task) {
+    func clickedInvite(task: TaskModel)  {
+        let invitedUser = TasksListScreenViewModel.randomFakeFirstName()
+        let query = "UPDATE COLLECTION tasks (invitationIds MAP)"
+        + " SET invitationIds -> ( \(invitedUser) = true )"
+        + " WHERE _id == :_id"
+        
+        Task {
+            do {
+                try await dittoStore.execute(
+                    query: query,
+                    arguments: ["invitedUser": invitedUser, "_id": task._id]
+                )
+            } catch {
+                print("task invite failed with error: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func clickedBody(task: TaskModel) {
         taskToEdit = task
         isPresentingEditScreen = true
     }
 
-    func clickedPlus() {
+    func clickedNewTask() {
         taskToEdit = nil
         isPresentingEditScreen = true
     }
     
-    func clickedGear() {
+    func clickedUsers() {
         taskToEdit = nil
-        isPresentingNameScreen = true
+        isPresentingUsersScreen = true
     }
 }
 
 struct TasksListScreen: View {
-
     @StateObject var viewModel = TasksListScreenViewModel()
 
     var body: some View {
@@ -90,31 +135,35 @@ struct TasksListScreen: View {
             List {
                 ForEach(viewModel.tasks) { task in
                     TaskRow(task: task,
-                        onToggle: { task in viewModel.toggle(task: task) },
+                        onToggle: { task in viewModel.toggleComplete(task: task) },
                         onClickBody: { task in viewModel.clickedBody(task: task) },
                         onClickInvite: { task in viewModel.clickedInvite(task: task)}
                     )
                 }
             }
-            .navigationTitle("Tasks - SwiftUI")
-            .navigationBarItems(trailing: Button(action: {
-                viewModel.clickedPlus()
-            }, label: {
-                Image(systemName: "plus")
-            }))
-            .navigationBarItems(trailing: Button(action: {
-                viewModel.clickedGear()
-            }, label: {
-                Image(systemName: "gear")
-            }))
+            .navigationTitle("Tasks")
+            .toolbar {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {                    
+                    Menu {
+                        Button("New Task") {
+                            viewModel.clickedNewTask()
+                        }
+                        Button("Users") {
+                            viewModel.clickedUsers()
+                        }
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
             .sheet(isPresented: $viewModel.isPresentingEditScreen, content: {
-                EditScreen(task: viewModel.taskToEdit, userId: viewModel.userId).onDisappear {
-                    viewModel.createQuery()
+                EditScreen(task: viewModel.taskToEdit).onDisappear {
+                    try? viewModel.updateQuery()
                 }
             })
-            .sheet(isPresented: $viewModel.isPresentingNameScreen, content: {
+            .sheet(isPresented: $viewModel.isPresentingUsersScreen, content: {
                 NameScreen(viewModel: viewModel).onDisappear {
-                    viewModel.createQuery()
+                    try? viewModel.updateQuery()
                 }
             })
         }

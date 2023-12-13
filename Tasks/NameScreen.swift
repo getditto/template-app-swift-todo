@@ -9,16 +9,23 @@ import SwiftUI
 
 struct NameScreen: View {
     @ObservedObject var viewModel: TasksListScreenViewModel
-    
+     
     var body: some View {
-        
         VStack {
-            Picker(selection: $viewModel.userId, label: Text("View as:")) {
-                ForEach(TasksApp.firstNameList, id: \.self) { name in
-                    Text(name).tag(name).font(Font.title)
+            Image(systemName: "arrow.down")
+                .foregroundStyle(.gray)
+                .font(.system(size: 24))
+                .opacity(0.5)
+            Form {
+                Picker(selection: $viewModel.userId, label: Text("Choose user").font(Font.body)) {
+                    ForEach(TasksApp.firstNameList, id: \.self) { name in
+                        Text(name).tag(name)
+                    }
+                    Text("Super Admin").tag("")
                 }
-                Text("Super Admin").tag("")
-            }.pickerStyle(InlinePickerStyle())
+                .font(Font.title2)
+                .pickerStyle(InlinePickerStyle())
+            }
         }
     }
 }
