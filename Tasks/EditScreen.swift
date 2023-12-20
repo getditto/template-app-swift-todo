@@ -5,108 +5,114 @@
 //  Created by Maximilian Alexander on 8/27/21.
 //
 
-import SwiftUI
+import Combine
 import DittoSwift
+import SwiftUI
 
 class EditScreenViewModel: ObservableObject {
+    @Published var taskBodyText: String
+    @Published var isExistingTask: Bool = false
+    @Published var evictRequested = false
+    @Published var task: TaskModel
+    private var _taskToEdit: TaskModel?
 
-    @Published var canDelete: Bool = false
-    @Published var body: String = ""
-    @Published var isCompleted: Bool = false
-    var userId: String = ""
-
-    private let _id: String?
-
-    init(task: Task?, userId: String) {
-        self._id = task?._id
-        self.userId = userId
-
-        canDelete = task != nil
-        body = task?.body ?? ""
-        isCompleted = task?.isCompleted ?? false
+    init(task: TaskModel?) {
+        self._taskToEdit = task
+        self.task = task ?? TaskModel.new()
+        self.taskBodyText = task?.body ?? ""
+        isExistingTask = task != nil        
     }
 
-    func save() {
-        if let _id = _id {
-            // the user is attempting to update
-            DittoManager.shared.ditto.store["tasks"].findByID(_id).update({ mutableDoc in
-                mutableDoc?["isCompleted"].set(self.isCompleted)
-                mutableDoc?["body"].set(self.body)
-            })
-        }else {
-            // the user is attempting to upsert
-            var task: [String : Any] = [
-                "body": body,
-                "isCompleted": isCompleted,
-                "isDeleted": false,
-                "invitationIds": [:]
-            ]
-            
-            if (userId != "") {
-                task["invitationIds"] = [userId: true]
-            }
-            try! DittoManager.shared.ditto.store["tasks"].upsert(task)
+    func save(listVM: TasksListScreenViewModel) {
+        if isExistingTask {
+            task.isSafeForEviction = evictRequested
+            listVM.saveEditedTask(task)
+        } else {
+            task.body = taskBodyText
+            listVM.saveNewTask(task)
         }
     }
-
-    func delete() {
-        guard let _id = _id else { return }
-        DittoManager.shared.ditto.store["tasks"].findByID(_id).update { doc in
-            doc?["isDeleted"].set(true)
-        }
-//        ditto.store["tasks"].findByID(_id).evict()
-    }
-
 }
 
 struct EditScreen: View {
+    @EnvironmentObject var listVM: TasksListScreenViewModel
+    @Environment(\.dismiss) private var dismiss
+    @StateObject var viewModel: EditScreenViewModel
+    @FocusState var bodyHasFocus : Bool
+    
+    var pickerLabel: String {
+        viewModel.isExistingTask ? "Edit user:" : "Create as user:"
+    }
 
-    @Environment(\.presentationMode) private var presentationMode
-    @ObservedObject var viewModel: EditScreenViewModel
-
-    init(task: Task?, userId: String) {
-        viewModel = EditScreenViewModel(task: task, userId: userId)
+    init(task: TaskModel?) {
+        self._viewModel = StateObject(
+            wrappedValue: EditScreenViewModel(task: task)
+        )
     }
 
     var body: some View {
         NavigationView {
             Form {
                 Section {
-                    TextField("Body", text: $viewModel.body)
-                    Toggle("Is Completed", isOn: $viewModel.isCompleted)
+                    // disallow editing body text on existing task
+                    TextField("Body", text: $viewModel.taskBodyText) 
+                        .focused($bodyHasFocus)
+                        .disabled(viewModel.isExistingTask)
+                        .opacity(viewModel.isExistingTask ? 0.5 : 1.0)
+
+                    Toggle("Is Completed", isOn: $viewModel.task.isCompleted)
                 }
-                Section {
-                    Button(action: {
-                        viewModel.save()
-                        self.presentationMode.wrappedValue.dismiss()
-                    }, label: {
-                        Text(viewModel.canDelete ? "Save" : "Create")
-                    })
-                }
-                if viewModel.canDelete {
+                
+                if viewModel.isExistingTask {
                     Section {
-                        Button(action: {
-                            viewModel.delete()
-                            self.presentationMode.wrappedValue.dismiss()
-                        }, label: {
-                            Text("Delete")
-                                .foregroundColor(.red)
-                        })
+                        HStack {
+                            Button(action: {
+                                viewModel.evictRequested.toggle()
+                            }, label: {
+                                Text("Evict Task")
+                                    .fontWeight(.bold)
+                                    .foregroundColor(viewModel.evictRequested ? .white : .red)
+                            })
+                            
+                            Spacer()
+                            
+                            if viewModel.evictRequested {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .contentShape(Rectangle())
                     }
+                    .listRowBackground(viewModel.evictRequested ? Color.red : nil)
                 }
+
+                Picker(selection: $viewModel.task.userId, label: Text(pickerLabel).font(Font.body)) {
+                    ForEach(TasksApp.firstNameList, id: \.self) { name in
+                        Text(name).tag(name)
+                    }
+                    Text("Super Admin").tag("")
+                }
+                .font(Font.title2)
+                .pickerStyle(InlinePickerStyle())
             }
-            .navigationTitle(viewModel.canDelete ? "Edit Task": "Create Task")
-            .navigationBarItems(trailing: Button(action: {
-                self.presentationMode.wrappedValue.dismiss()
-            }, label: {
-                Text("Cancel")
-            }))
+            .navigationTitle(viewModel.isExistingTask ? "Edit Task": "Create Task")
+            .navigationBarItems(
+                leading: Button(viewModel.isExistingTask ? "Save" : "Create") {
+                    viewModel.save(listVM: listVM)
+                    dismiss()
+                }, 
+                trailing: Button("Cancel") {
+                    dismiss()
+                }
+            )
         }
     }
 }
 
 struct EditScreen_Previews: PreviewProvider {
     static var previews: some View {
-        EditScreen(task: Task(body: "Get Milk", isCompleted: true, invitationIds: [:]), userId: "")
+        EditScreen(
+            task: TaskModel(body: "Get Milk", isCompleted: true)
+        )
     }
 }
