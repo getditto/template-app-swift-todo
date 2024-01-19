@@ -85,8 +85,7 @@ class TasksListScreenViewModel: ObservableObject {
                     guard let self = self else { return }
                     
                     self.tasks = result.items.compactMap { 
-//                            TaskModel($0.value) // alternative contstructor
-                        TaskModel($0.jsonString())
+                        TaskModel($0.cborData())
                     }
                 }
         } catch {

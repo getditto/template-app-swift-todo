@@ -6,6 +6,7 @@
 //
 //  Copyright © 2023 DittoLive Incorporated. All rights reserved.
 
+import CBORCoding
 import DittoSwift
 
 struct TaskModel {
@@ -67,16 +68,17 @@ extension TaskModel {
 }
 
 extension TaskModel: Codable {
-
-    /// Returns optional instance decoded from `QueryResultItem.jsonString()`    
-    init?(_ json: String) {
-            do {
-                self = try JSONDecoder().decode(Self.self, from: Data(json.utf8))
-            } catch {
-                print("ERROR:", error.localizedDescription)
-                return nil
-            }
-        }
+    static var decoder = CBORDecoder()
+    
+    /// Returns optional instance decoded from `QueryResultItem.cborData()`   
+    init?(_ data: Data) {
+        do {
+            self = try Self.decoder.decode(Self.self, from: data)
+        } catch {
+            print("ERROR:", error.localizedDescription)
+            return nil
+        }        
+    }
 }
 
 extension TaskModel {
