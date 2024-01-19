@@ -67,7 +67,6 @@ extension TaskModel {
 }
 
 extension TaskModel: Codable {
-    private static let decoder = JSONDecoder()
 
     /// Returns optional instance decoded from `QueryResultItem.jsonString()`    
     init?(_ json: String) {
@@ -78,15 +77,6 @@ extension TaskModel: Codable {
                 return nil
             }
         }
-    /// Returns optional instance decoded from `QueryResultItem.jsonString()`
-    static func withJson(_ json: String) -> TaskModel? {
-        do {
-            return try decoder.decode(Self.self, from: Data(json.utf8))
-        } catch {
-            print("TaskModel.\(#function) - ERROR decoding from JSON string: \(error.localizedDescription)")
-            return nil
-        }
-    }
 }
 
 extension TaskModel {
