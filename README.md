@@ -20,7 +20,10 @@ the project directory
 "Super Adnim", the default user    
 - In list view, click the body of a task row to open it in Edit view    
 - In list view, toggle task completion status in place by clicking the row icon      
-- Evict task in the Edit view
+- Evict task in the Edit view  
+
+(Note: this quickstart tutorial branch does not inclued inviting other users to a task, as shown 
+in the screenshot below.)  
 
 ![Tasks_app_screenshot_473x1024](https://github.com/getditto/template-app-swift-todo/assets/10930016/d43f7fea-c38f-48ca-a4f2-f2773e4961a9)
 
