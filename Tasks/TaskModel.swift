@@ -14,7 +14,6 @@ struct TaskModel {
     let userId: String
     let isCompleted: Bool
     let isSafeForEviction: Bool
-    let invitationIds: [String: Bool]
     
     /// Returns instance from `QueryResultItem.value
     init(_ value: [String: Any?]) {
@@ -23,7 +22,6 @@ struct TaskModel {
         self.userId = value["userId"] as? String ?? ""
         self.isCompleted = value["isCompleted"] as? Bool ?? false
         self.isSafeForEviction = value["isSafeForEviction"] as? Bool ?? false
-        self.invitationIds = value["invitationIds"] as? [String:Bool] ?? [:]
     }
 }
 
@@ -55,15 +53,15 @@ extension TaskModel: Equatable {
 extension TaskModel {
     
     /// Convenience for Xcode previews
-    init(
-        body: String, isCompleted: Bool = false, userId: String = "", 
-        isSafeForEviction: Bool = false, invitationIds: [String: Bool] = [:]) 
-    {
+    init(body: String,
+         userId: String = "",
+         isCompleted: Bool = false,
+         isSafeForEviction: Bool = false
+    ) {
         _id = UUID().uuidString
         self.body = body
         self.userId = userId
         self.isCompleted = isCompleted
         self.isSafeForEviction = isSafeForEviction
-        self.invitationIds = invitationIds
     }
 }

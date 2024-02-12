@@ -9,10 +9,8 @@ import SwiftUI
 
 struct TaskRow: View {
     let task: TaskModel
-
     var onToggle: ((_ task: TaskModel) -> Void)?
     var onClickBody: ((_ task: TaskModel) -> Void)?
-    var onClickInvite: ((_ task: TaskModel) -> Void)?
 
     var body: some View {
         HStack {
@@ -23,22 +21,11 @@ struct TaskRow: View {
                 .onTapGesture {
                     onToggle?(task)
                 }
-            if task.isCompleted {
-                Text(task.body)
-                    .strikethrough()
-            } else {
-                Text(task.body)
-            }
-            
+
+            Text(task.body)
+                .strikethrough(task.isCompleted)
+
             Spacer()
-            
-            Text(task.invitationIds.keys.reduce("", { x, y in
-                x + y + ", "
-            })).foregroundColor(Color.gray)
-            
-            Text("+").onTapGesture {
-                onClickInvite?(task)
-            }
         }
         .contentShape(Rectangle())
         .onTapGesture {
@@ -50,9 +37,7 @@ struct TaskRow: View {
 struct TaskRow_Previews: PreviewProvider {
     static var previews: some View {
         List {
-            TaskRow(task: TaskModel(
-                body: "Get Milk", isCompleted: true, invitationIds: ["Susan": true, "John": true])
-            )
+            TaskRow(task: TaskModel(body: "Get Milk", isCompleted: true))
             TaskRow(task: TaskModel(body: "Do Homework"))
             TaskRow(task: TaskModel(body: "Take out trash", isCompleted: true))
         }

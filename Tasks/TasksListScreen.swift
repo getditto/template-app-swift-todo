@@ -30,8 +30,8 @@ class TasksListScreenViewModel: ObservableObject {
     public func updateQuery() throws {
         
         let query = userId.isEmpty ?
-        "SELECT * FROM COLLECTION tasks (invitationIds MAP) WHERE NOT isSafeForEviction"
-        : "SELECT * FROM COLLECTION tasks (invitationIds MAP) WHERE NOT isSafeForEviction AND userId == :userId"
+        "SELECT * FROM COLLECTION tasks WHERE NOT isSafeForEviction"
+        : "SELECT * FROM COLLECTION tasks WHERE NOT isSafeForEviction AND userId == :userId"
 
         do {
             // Existing subscription must be cancelled before resetting
@@ -100,8 +100,7 @@ class TasksListScreenViewModel: ObservableObject {
     func toggleComplete(task: TaskModel) {        
         Task {
             let isComplete = !task.isCompleted
-            let query = "UPDATE COLLECTION tasks (invitationIds MAP)"
-            + "SET isCompleted = :isCompleted WHERE _id == :_id"
+            let query = "UPDATE COLLECTION tasks SET isCompleted = :isCompleted WHERE _id == :_id"
 
             do {
                 try await dittoStore.execute(
@@ -110,24 +109,6 @@ class TasksListScreenViewModel: ObservableObject {
                 )
             } catch {
                 print("TaskListScreenVM.\(#function) - ERROR toggling task: \(error.localizedDescription)")
-            }
-        }
-    }
-
-    func clickedInvite(task: TaskModel)  {
-        let invitedUser = TasksListScreenViewModel.randomFakeFirstName()
-        let query = "UPDATE COLLECTION tasks (invitationIds MAP)"
-        + " SET invitationIds -> ( \(invitedUser) = true )"
-        + " WHERE _id == :_id"
-        
-        Task {
-            do {
-                try await dittoStore.execute(
-                    query: query,
-                    arguments: ["invitedUser": invitedUser, "_id": task._id]
-                )
-            } catch {
-                print("TaskListScreenVM.\(#function): ERROR toggling task: \(error.localizedDescription)")
             }
         }
     }
@@ -157,8 +138,7 @@ struct TasksListScreen: View {
                 ForEach(viewModel.tasks) { task in
                     TaskRow(task: task,
                         onToggle: { task in viewModel.toggleComplete(task: task) },
-                        onClickBody: { task in viewModel.clickedBody(task: task) },
-                        onClickInvite: { task in viewModel.clickedInvite(task: task)}
+                        onClickBody: { task in viewModel.clickedBody(task: task) }
                     )
                 }
             }

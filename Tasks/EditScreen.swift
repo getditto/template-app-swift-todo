@@ -63,15 +63,13 @@ class EditScreenViewModel: ObservableObject {
             }
         } else {  // create new task           
             let newTask: [String : Any] = [
-//                "_id": UUIDString is assigned implicitly by ditto if not explicity assigned
                 "body": body,
                 "userId": userId,
                 "isCompleted": isCompleted,
-                "isSafeForEviction": false,
-                "invitationIds": [String:Bool]()  
+                "isSafeForEviction": false  
             ]
 
-            let query = "INSERT INTO COLLECTION tasks (invitationIds MAP) DOCUMENTS (:newTask)"
+            let query = "INSERT INTO COLLECTION tasks DOCUMENTS (:newTask)"
             do {
                 try await dittoStore.execute(query: query, arguments: ["newTask": newTask])
             } catch {
