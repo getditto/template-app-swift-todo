@@ -145,16 +145,16 @@ struct TasksListScreen: View {
             .animation(.default, value: viewModel.tasks)
             .navigationTitle("Tasks")
             .toolbar {
-                ToolbarItemGroup(placement: .navigationBarTrailing) {                    
-                    Menu {
-                        Button("New Task") {
-                            viewModel.clickedNewTask()
-                        }
-                        Button("Users") {
-                            viewModel.clickedUsers()
-                        }
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    Button {
+                        viewModel.clickedNewTask()
                     } label: {
                         Image(systemName: "plus")
+                    }
+                    .buttonStyle(.bordered)
+
+                    Button("Users") {
+                        viewModel.clickedUsers()
                     }
                 }
             }
@@ -176,6 +176,7 @@ struct TasksListScreen: View {
                 }
             })
         }
+        .navigationViewStyle(.stack)
     }
 }
 

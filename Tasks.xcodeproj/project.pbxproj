@@ -9,10 +9,10 @@
 /* Begin PBXBuildFile section */
 		01E97339292EE51800224948 /* NameScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01E97338292EE51800224948 /* NameScreen.swift */; };
 		01E9733B292EEB8300224948 /* DittoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01E9733A292EEB8300224948 /* DittoManager.swift */; };
+		07AE54E22C81840400E1FCBD /* DittoObjC in Frameworks */ = {isa = PBXBuildFile; productRef = 07AE54E12C81840400E1FCBD /* DittoObjC */; };
+		07AE54E42C81840400E1FCBD /* DittoSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 07AE54E32C81840400E1FCBD /* DittoSwift */; };
 		14041E5E2B153C5100012E7E /* TaskModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14041E5D2B153C5000012E7E /* TaskModel.swift */; };
 		14041E602B153D4D00012E7E /* TaskRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14041E5F2B153D4D00012E7E /* TaskRow.swift */; };
-		14041E672B154EA700012E7E /* DittoObjC in Frameworks */ = {isa = PBXBuildFile; productRef = 14041E662B154EA700012E7E /* DittoObjC */; };
-		14041E692B154EA700012E7E /* DittoSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 14041E682B154EA700012E7E /* DittoSwift */; };
 		1470875D2B182B77002C2171 /* Env.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1470875C2B182B77002C2171 /* Env.swift */; };
 		2DE79F1026D8B2F5003F9F80 /* TasksApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DE79F0F26D8B2F5003F9F80 /* TasksApp.swift */; };
 		2DE79F1426D8B2F6003F9F80 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DE79F1326D8B2F6003F9F80 /* Assets.xcassets */; };
@@ -55,8 +55,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				14041E672B154EA700012E7E /* DittoObjC in Frameworks */,
-				14041E692B154EA700012E7E /* DittoSwift in Frameworks */,
+				07AE54E22C81840400E1FCBD /* DittoObjC in Frameworks */,
+				07AE54E42C81840400E1FCBD /* DittoSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,8 +125,8 @@
 			);
 			name = Tasks;
 			packageProductDependencies = (
-				14041E662B154EA700012E7E /* DittoObjC */,
-				14041E682B154EA700012E7E /* DittoSwift */,
+				07AE54E12C81840400E1FCBD /* DittoObjC */,
+				07AE54E32C81840400E1FCBD /* DittoSwift */,
 			);
 			productName = Tasks;
 			productReference = 2DE79F0C26D8B2F5003F9F80 /* Tasks.app */;
@@ -158,7 +158,7 @@
 			);
 			mainGroup = 2DE79F0326D8B2F5003F9F80;
 			packageReferences = (
-				14041E652B154EA700012E7E /* XCRemoteSwiftPackageReference "DittoSwiftPackage" */,
+				07AE54E02C81840400E1FCBD /* XCRemoteSwiftPackageReference "DittoSwiftPackage" */,
 			);
 			productRefGroup = 2DE79F0D26D8B2F5003F9F80 /* Products */;
 			projectDirPath = "";
@@ -366,8 +366,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = live.ditto.Tasks;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,3";
 			};
 			name = Debug;
 		};
@@ -394,8 +396,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = live.ditto.Tasks;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,3";
 			};
 			name = Release;
 		};
@@ -423,25 +427,25 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		14041E652B154EA700012E7E /* XCRemoteSwiftPackageReference "DittoSwiftPackage" */ = {
+		07AE54E02C81840400E1FCBD /* XCRemoteSwiftPackageReference "DittoSwiftPackage" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/getditto/DittoSwiftPackage";
 			requirement = {
-				kind = exactVersion;
-				version = 4.5.0;
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.8.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		14041E662B154EA700012E7E /* DittoObjC */ = {
+		07AE54E12C81840400E1FCBD /* DittoObjC */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 14041E652B154EA700012E7E /* XCRemoteSwiftPackageReference "DittoSwiftPackage" */;
+			package = 07AE54E02C81840400E1FCBD /* XCRemoteSwiftPackageReference "DittoSwiftPackage" */;
 			productName = DittoObjC;
 		};
-		14041E682B154EA700012E7E /* DittoSwift */ = {
+		07AE54E32C81840400E1FCBD /* DittoSwift */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 14041E652B154EA700012E7E /* XCRemoteSwiftPackageReference "DittoSwiftPackage" */;
+			package = 07AE54E02C81840400E1FCBD /* XCRemoteSwiftPackageReference "DittoSwiftPackage" */;
 			productName = DittoSwift;
 		};
 /* End XCSwiftPackageProductDependency section */

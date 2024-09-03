@@ -14,23 +14,28 @@ struct TaskRow: View {
 
     var body: some View {
         HStack {
-            Image(systemName: task.isCompleted ? "circle.fill": "circle")
-                .renderingMode(.template)
-                .foregroundColor(.accentColor)
-                .frame(minWidth: 32)
-                .onTapGesture {
-                    onToggle?(task)
-                }
+            Button {
+                onToggle?(task)
+            } label: {
+                Image(systemName: task.isCompleted ? "circle.fill": "circle")
+                    .renderingMode(.template)
+                    .foregroundColor(.accentColor)
+                    .frame(minWidth: 32)
+            }
+            .buttonStyle(.plain)
+            Divider()
 
-            Text(task.body)
-                .strikethrough(task.isCompleted)
+            Button {
+                onClickBody?(task)
+            } label: {
+                Text(task.body)
+                    .strikethrough(task.isCompleted)
+            }
+            .buttonStyle(.plain)
 
             Spacer()
         }
         .contentShape(Rectangle())
-        .onTapGesture {
-            onClickBody?(task)
-        }
     }
 }
 
